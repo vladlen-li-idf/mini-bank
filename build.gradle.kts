@@ -42,6 +42,7 @@ configure(kotlinProjects()) {
     implementation(kotlin("stdlib-jdk8"))
     implementation("org.jooq:jooq:3.18.6")
     implementation("io.projectreactor:reactor-core:3.5.9")
+    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:1.2.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
   }
 
