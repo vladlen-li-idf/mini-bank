@@ -3,9 +3,9 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 plugins {
-	`kotlin-dsl`
-  id("org.springframework.boot") version "3.1.2"
+  `kotlin-dsl`
   id("io.spring.dependency-management") version "1.1.2"
+  id("nu.studer.jooq") version "8.2.1"
   kotlin("jvm") version "1.8.20"
   kotlin("plugin.spring") version "1.8.20"
   kotlin("kapt") version "1.8.20"
@@ -19,35 +19,49 @@ group = "kz.solva"
 version = "0.0.1-SNAPSHOT"
 
 val implementation by configurations
+val springBootVersion: String by extra
 
 fun path(project: Project, folderName: String) =
-	Files.isDirectory(Paths.get(project.projectDir.absolutePath, "src/main/$folderName"))
-fun kotlinProjects() = subprojects.filter { project -> path(project, "kotlin") }
+  Files.isDirectory(Paths.get(project.projectDir.absolutePath, "src/main/$folderName"))
 
+fun kotlinProjects() = subprojects.filter { project -> path(project, "kotlin") }
+fun modelProjects() = subprojects.filter { project -> Regex("[a-z]+-model").matches(project.projectDir.name) }
+
+allprojects {
+  repositories {
+    mavenCentral()
+  }
+}
 
 configure(kotlinProjects()) {
-	apply(plugin = "kotlin")
-	apply(plugin = "kotlin-kapt")
-	apply(plugin = "kotlin-spring")
+  apply(plugin = "kotlin")
+  apply(plugin = "kotlin-kapt")
+  apply(plugin = "kotlin-spring")
 
-	dependencies {
-		implementation(kotlin("stdlib-jdk8"))
-	}
+  dependencies {
+    implementation(kotlin("stdlib-jdk8"))
+    implementation("org.jooq:jooq:3.18.6")
+    implementation("io.projectreactor:reactor-core:3.5.9")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
+  }
 
-	tasks {
-		withType<KotlinCompile> {
-			kotlinOptions {
-				freeCompilerArgs += "-Xjsr305=strict"
-				jvmTarget = "17"
-			}
-		}
+  tasks {
+    withType<KotlinCompile> {
+      kotlinOptions {
+        freeCompilerArgs += "-Xjsr305=strict"
+        jvmTarget = "17"
+      }
+    }
 
-		withType<Test> {
-			useJUnitPlatform()
-		}
+    withType<Test> {
+      useJUnitPlatform()
+    }
+  }
+}
 
-		repositories {
-			mavenCentral()
-		}
-	}
+configure(modelProjects()) {
+  apply(plugin = "nu.studer.jooq")
+  dependencies {
+    jooqGenerator("org.postgresql:r2dbc-postgresql:1.0.2.RELEASE")
+  }
 }
