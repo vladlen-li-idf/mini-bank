@@ -1,0 +1,9 @@
+liquibase:
+  changelog:
+    path: classpath:db/changelog/changelog.xml
+
+database:
+  url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:test}
+  driverClassName: ${DB_DRIVER:org.postgresql.Driver}
+  username: ${DB_USERNAME:postgres}
+  password: ${DB_PASSWORD:postgres}
