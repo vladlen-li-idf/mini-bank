@@ -2,6 +2,11 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.nio.file.Files
 import java.nio.file.Paths
 
+
+val kotlinVersion: String by extra
+val implementation by configurations
+val springBootVersion: String by extra
+
 plugins {
   `kotlin-dsl`
   id("io.spring.dependency-management") version "1.1.2"
@@ -18,14 +23,16 @@ repositories {
 group = "kz.solva"
 version = "0.0.1-SNAPSHOT"
 
-val implementation by configurations
-val springBootVersion: String by extra
-
 fun path(project: Project, folderName: String) =
   Files.isDirectory(Paths.get(project.projectDir.absolutePath, "src/main/$folderName"))
 
 fun kotlinProjects() = subprojects.filter { project -> path(project, "kotlin") }
 fun modelProjects() = subprojects.filter { project -> Regex("[a-z]+-model").matches(project.projectDir.name) }
+
+tasks.build {
+  dependsOn(":migration:build")
+  finalizedBy(":migration:runMigrations")
+}
 
 allprojects {
   repositories {
