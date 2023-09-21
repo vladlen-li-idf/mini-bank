@@ -22,40 +22,40 @@ abstract class AbstractJooqRepository<
   private val table: T = getTable()
 
   override fun findAll(): Flux<E> = Flux
-      .fromIterable(
-          dslContext
-              .selectFrom(table)
-      ).mapNotNull { it.into(entityClass) }
+    .fromIterable(
+      dslContext
+        .selectFrom(table)
+    ).mapNotNull { it.into(entityClass) }
 
   override fun findById(id: Long): Mono<E> =
-      getMonoEntity {
-        dslContext
-            .selectFrom(table)
-            .where(eq(id))
-            .fetchOptional()
-      }
+    getMonoEntity {
+      dslContext
+        .selectFrom(table)
+        .where(eq(id))
+        .fetchOptional()
+    }
 
   override fun save(entity: E): Mono<E> =
-      getMonoEntity {
-        dslContext
-            .transactionResult { config ->
-              val transactionContext = config.dsl()
-              transactionContext
-                  .insertInto(table)
-                  .set(transactionContext.newRecord(table, entity))
-                  .returning()
-                  .fetchOptional()
-            }
-      }
-
-  override fun delete(id: Long): Mono<E> =
-      getMonoEntity {
-        dslContext
-            .delete(table)
-            .where(eq(id))
+    getMonoEntity {
+      dslContext
+        .transactionResult { config ->
+          val transactionContext = config.dsl()
+          transactionContext
+            .insertInto(table)
+            .set(transactionContext.newRecord(table, entity))
             .returning()
             .fetchOptional()
-      }
+        }
+    }
+
+  override fun delete(id: Long): Mono<E> =
+    getMonoEntity {
+      dslContext
+        .delete(table)
+        .where(eq(id))
+        .returning()
+        .fetchOptional()
+    }
 
   private fun getMonoEntity(executable: () -> Optional<R>): Mono<E> = executable
       .invoke()
@@ -68,7 +68,7 @@ abstract class AbstractJooqRepository<
       return tableClass.getDeclaredConstructor().newInstance()
     } catch (e: ReflectiveOperationException) {
       throw ReflectionException
-          .fromMessageAndCause("Can not get table using Reflection API", e)
+        .fromMessageAndCause("Can not get table using Reflection API", e)
     }
   }
 
